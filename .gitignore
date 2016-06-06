@@ -1,0 +1,5 @@
+.*.swp
+
+docker-av-*/etc
+docker-av-*/usr
+docker-av-*/var

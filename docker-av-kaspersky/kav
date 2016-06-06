@@ -1,0 +1,6 @@
+#!/bin/bash
+PATH=/usr/lib/kl:$PATH
+LD_LIBRARY_PATH=/usr/lib/kl:$LD_LIBRARY_PATH
+KL_PLUGINS_PATH=/usr/lib/kl
+export PATH LD_LIBRARY_PATH KL_PLUGINS_PATH
+/usr/lib/kl/kav $@

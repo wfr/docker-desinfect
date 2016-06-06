@@ -1,0 +1,51 @@
+#!/bin/bash
+# This script extracts ct_desinfect_2016.iso
+# ... needs root because of "mount"
+# ... could be rewritten to unpack the contents with xorriso
+
+set -e
+function die() { echo "$@" >&2; exit 1; }
+
+### 
+function cleanup() {
+	umount /mnt/desinfect/{3,2,1}
+	rmdir /mnt/desinfect/{3,2,1}
+	rmdir /mnt/desinfect
+}
+trap cleanup EXIT
+
+
+### mount nested ISO
+[[ $# == 1 ]] || die "usage: $0 DESINFECT_ISO_DIR"
+desinfect_iso="$1"
+[ -f "$desinfect_iso" ] || die "FILE NOT FOUND: $desinfect_iso"
+
+[ -e /mnt/desinfect ] && die "ALREADY EXISTS: /mnt/desinfect/"
+mkdir -p /mnt/desinfect/{1,2,3}
+mount -o ro "$desinfect_iso" /mnt/desinfect/1/
+mount -o ro /mnt/desinfect/1/software/desinfect-2016.iso /mnt/desinfect/2/
+mount /mnt/desinfect/2/casper/filesystem.squashfs /mnt/desinfect/3/
+
+### extract
+this_dir="$(dirname "$(readlink -f "$0")")"
+
+# Kaspersky
+cd "$this_dir/docker-av-kaspersky/"
+rsync -rav \
+	--filter '+ usr' \
+	--filter '+ usr/lib' \
+	--filter '+ usr/lib/kl/***' \
+	--filter '+ etc' \
+	--filter '+ etc/kl/***' \
+	--filter '+ var' \
+	--filter '+ var/kl/***' \
+	--exclude '*' \
+	/mnt/desinfect/3/ rootfs/
+
+# Avira
+cd "$this_dir/docker-av-avira/"
+rsync -rav \
+	--filter '+ AntiVir/***' \
+	--filter '+ AntiVirUpdate/***' \
+	--exclude '*' \
+	/mnt/desinfect/3/ rootfs/
