@@ -1,12 +1,13 @@
-FROM ubuntu:xenial
+FROM debian:jessie
 MAINTAINER Wolfgang Frisch <wfr@roembden.net>
+
+RUN set -xe \
+	&& dpkg --add-architecture i386 \
+	&& apt-get update \
+	&& apt-get install -y libc6-i386
 
 COPY rootfs/ /
 COPY avupdate /
-
-RUN set -xe \
-	&& apt-get update \
-	&& apt-get install libc6-i386
 
 WORKDIR /data
 
